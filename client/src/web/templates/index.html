@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSDS - Bus Stop Display System</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🚌 Bus Stop Display System</h1>
+            <p class="subtitle">Configuration Interface</p>
+        </header>
+
+        <main>
+            <!-- Display Preview -->
+            <section class="card preview-section">
+                <h2>Display Preview</h2>
+                <div class="preview-container">
+                    <img id="preview" src="/api/preview" alt="Display Preview">
+                </div>
+                <div class="preview-actions">
+                    <button id="refresh-preview" class="btn btn-secondary">
+                        🔄 Refresh Preview
+                    </button>
+                    <button id="update-display" class="btn btn-primary">
+                        📺 Update Display
+                    </button>
+                </div>
+            </section>
+
+            <!-- Data Source Configuration -->
+            <section class="card">
+                <h2>Data Source</h2>
+                <div class="form-group">
+                    <label>Schedule Source:</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="data-mode" value="gtfs" {% if config.data_source.mode=='gtfs'
+                                %}checked{% endif %}>
+                            <span>GTFS Feed</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="data-mode" value="mint" {% if config.data_source.mode=='mint'
+                                %}checked{% endif %}>
+                            <span>MINT API</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- GTFS Options -->
+                <div id="gtfs-options" class="data-source-options"
+                    style="{% if config.data_source.mode != 'gtfs' %}display: none;{% endif %}">
+                    <div class="form-group">
+                        <label for="gtfs-url">GTFS ZIP URL:</label>
+                        <input type="url" id="gtfs-url" value="{{ config.data_source.gtfs_url or '' }}"
+                            placeholder="https://example.com/gtfs.zip">
+                    </div>
+                    <div class="form-group">
+                        <label for="gtfs-rt-url">GTFS-RT URL (optional):</label>
+                        <input type="url" id="gtfs-rt-url" value="{{ config.data_source.gtfs_rt_url or '' }}"
+                            placeholder="https://example.com/gtfs-rt">
+                    </div>
+                    <div class="form-group gtfs-status">
+                        <span id="gtfs-status-text">GTFS: Not loaded</span>
+                        <button id="download-gtfs" class="btn btn-secondary btn-small">
+                            📥 Download GTFS
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MINT Options -->
+                <div id="mint-options" class="data-source-options"
+                    style="{% if config.data_source.mode != 'mint' %}display: none;{% endif %}">
+                    <div class="form-group">
+                        <label for="mint-api-url">MINT API URL:</label>
+                        <input type="url" id="mint-api-url" value="{{ config.data_source.mint_api_url }}"
+                            placeholder="http://localhost:8000">
+                    </div>
+                    <div class="form-group">
+                        <label for="mint-system-id">System ID:</label>
+                        <input type="number" id="mint-system-id" value="{{ config.data_source.mint_system_id }}"
+                            min="1">
+                    </div>
+                </div>
+
+                <button id="save-data-source" class="btn btn-primary">
+                    💾 Save Data Source
+                </button>
+            </section>
+
+            <!-- Stop Selection -->
+            <section class="card">
+                <h2>Stop Configuration</h2>
+                <div class="form-group">
+                    <label for="stop-search">Search for a stop:</label>
+                    <input type="text" id="stop-search" placeholder="Enter stop name or code...">
+                    <div id="search-results" class="search-results"></div>
+                </div>
+                <div class="form-group">
+                    <label>Current Stop:</label>
+                    <div id="current-stop" class="current-stop">
+                        {% if config.stop_id %}
+                        <strong>{{ config.stop_name }}</strong>
+                        <span class="stop-code">({{ config.stop_id }})</span>
+                        {% else %}
+                        <em>No stop selected</em>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings -->
+            <section class="card">
+                <h2>Settings</h2>
+                <div class="form-group">
+                    <label for="refresh-interval">Refresh Interval (seconds):</label>
+                    <input type="number" id="refresh-interval" value="{{ config.refresh_interval_seconds }}" min="10"
+                        max="300" step="10">
+                </div>
+                <div class="form-group">
+                    <label>Quiet Hours (optional):</label>
+                    <div class="time-range">
+                        <input type="time" id="quiet-start" value="{{ config.power.quiet_hours_start or '' }}"
+                            placeholder="Start">
+                        <span>to</span>
+                        <input type="time" id="quiet-end" value="{{ config.power.quiet_hours_end or '' }}"
+                            placeholder="End">
+                    </div>
+                    <small>Display will sleep during quiet hours to save power.</small>
+                </div>
+                <button id="save-settings" class="btn btn-primary">
+                    💾 Save Settings
+                </button>
+            </section>
+
+            <!-- Status -->
+            <section class="card status-card">
+                <h2>System Status</h2>
+                <div id="status">
+                    <p><span class="status-label">Data Source:</span> <span id="data-source-status">Loading...</span>
+                    </p>
+                    <p><span class="status-label">Provider:</span> <span id="provider-status">--</span></p>
+                    <p><span class="status-label">Refresh:</span> <span id="refresh-rate">--</span>s</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>BSDS - Bus Stop Display System</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

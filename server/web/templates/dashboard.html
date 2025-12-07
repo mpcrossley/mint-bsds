@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSDS Admin</title>
+    <style>
+        body { font-family: system-ui; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; }
+        .status-pending { color: orange; }
+        .status-paired { color: blue; }
+        .status-active { color: green; }
+        .status-offline { color: red; }
+    </style>
+</head>
+<body>
+    <h1>BSDS Device Management</h1>
+    <p><em>NextJS dashboard coming soon. This is a temporary placeholder.</em></p>
+    
+    <h2>Registered Devices</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Claim Code</th>
+                <th>Status</th>
+                <th>Stop</th>
+                <th>Last Seen</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for device in devices %}
+            <tr>
+                <td><code>{{ device.claim_code }}</code></td>
+                <td class="status-{{ device.status.value }}">{{ device.status.value }}</td>
+                <td>{{ device.stop_name or "-" }}</td>
+                <td>{{ device.last_seen.strftime('%Y-%m-%d %H:%M') if device.last_seen else "-" }}</td>
+                <td>{{ device.ip_address or "-" }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">No devices registered yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

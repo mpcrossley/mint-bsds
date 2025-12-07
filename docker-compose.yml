@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: bsds-postgres
+    environment:
+      POSTGRES_USER: bsds
+      POSTGRES_PASSWORD: bsds
+      POSTGRES_DB: bsds
+    volumes:
+      - bsds_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - bsds-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U bsds" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: bsds-server
+    environment:
+      DATABASE_URL: postgresql+asyncpg://bsds:bsds@postgres:5432/bsds
+    ports:
+      - "5001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bsds-network
+    volumes:
+      - bsds_gtfs_cache:/app/cache
+    restart: unless-stopped
+
+networks:
+  bsds-network:
+    driver: bridge
+
+volumes:
+  bsds_postgres_data:
+  bsds_gtfs_cache:
